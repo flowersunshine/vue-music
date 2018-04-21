@@ -40,5 +40,17 @@ export default {
   },
   getHotSinger () {
     return axios.get('/top/artists')
+  },
+  getTopList (id) {
+    return axios.get('/top/list?idx=' + id)
+  },
+  getNewSong () {
+    return axios.get('/personalized/newsong')
+  },
+  getDJ () {
+    return axios.get('/personalized/djprogram')
+  },
+  getProgram () {
+    return axios.get('/program/recommend')
   }
 }

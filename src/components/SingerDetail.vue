@@ -29,7 +29,6 @@
           <p>{{item.txt}}</p>
         </div>
       </tab-pane>
-      <tab-pane label="相似歌手" name="similiarSinger"></tab-pane>
     </Tabs>
   </div>
 </div>

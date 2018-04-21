@@ -41,23 +41,28 @@
                 <Slider v-model="volume" :min="0.0" :max="1.0" :step="0.01" @on-input="volumeControl()"></Slider>
               </div>
             </div>
-            <a role="button" @click="loopControl()">
+            <a role="button" @click="loopControl()" :title="loopTip">
               <Icon type="ios-loop-strong" v-if="loop === 'single'"></Icon>
               <Icon type="shuffle" v-if="loop === 'random'"></Icon>
               <Icon type="crop" v-if="loop === 'all'"></Icon>
             </a>
-            <a role="button" @click="toggleLyric()">
+            <a role="button" @click="toggleLyric()" title="歌词">
               <Badge :count="playListCount">
                 <Icon type="android-list"></Icon>
               </Badge>
             </a>
-            <a :href="playSrc" target="_blank">
+            <a :href="playSrc" target="_blank" title="下载">
               <Icon type="ios-download"></Icon>
             </a>
           </div>
           <div class="lysrc" v-show="lysrcShow">
             <div class="lysrc-left">
-
+              <ul>
+                <li v-for="item in playList" :key="item">
+                  <song-play :id="item" style="float:left" @click.native="playThis(item)"></song-play>
+                  <a role="button" @click="deleteItem(item)"><Icon type="trash-a"></Icon></a>
+                </li>
+              </ul>
             </div>
             <div class="lysrc-right">
               <h3>{{songInfo.name}}</h3>
@@ -75,19 +80,24 @@
 
 <script>
 import Http from '../http/core.http'
+import SongPlay from './SongPlay'
 export default {
+  components: {SongPlay},
   name: 'play-music',
+  created () {
+    this.playList = JSON.parse(localStorage.getItem('playList')) || []
+  },
   mounted () {
     const self = this
     this.audio = document.querySelector('audio')
     this.audio.addEventListener('ended', function () {
-      if (self.list.length !== 0) {
+      if (self.playList.length !== 0) {
         if (self.loop === 'all') {
           self.pos++
-          self.playingID = self.list[self.pos % self.list.length]
+          self.playingID = self.playList[self.pos % self.playList.length]
         } else if (self.loop === 'random') {
-          self.pos = Math.ceil(Math.random() * self.list.length)
-          self.playingID = self.list[self.pos % self.list.length]
+          self.pos = Math.ceil(Math.random() * self.playList.length)
+          self.playingID = self.playList[self.pos % self.playList.length]
         }
       }
     })
@@ -125,7 +135,8 @@ export default {
       pos: 0,
       playingID: '',
       lysrc: [],
-      lysrcShow: false
+      lysrcShow: false,
+      loopTip: '单曲循环'
     }
   },
   methods: {
@@ -147,51 +158,67 @@ export default {
       switch (this.loop) {
         case 'single' : {
           this.loop = 'random'
+          this.loopTip = '随机'
           this.audio.loop = false
           break
         }
         case 'random' : {
           this.loop = 'all'
+          this.loopTip = '循环'
           this.audio.loop = false
           break
         }
         case 'all' : {
           this.loop = 'single'
+          this.loopTip = '单曲循环'
           this.audio.loop = true
           break
         }
       }
     },
     last () {
-      if (this.list.length !== 0 && this.pos !== 0) {
+      if (this.playList.length !== 0 && this.pos !== 0) {
         if (this.loop !== 'random') {
-          this.playingID = this.list[--this.pos]
+          this.playingID = this.playList[--this.pos]
         } else {
-          this.pos = Math.ceil(Math.random() * this.list.length)
-          this.playingID = this.list[this.pos % this.list.length]
+          this.pos = Math.ceil(Math.random() * this.playList.length)
+          this.playingID = this.playList[this.pos % this.playList.length]
         }
       }
     },
     next () {
-      if (this.list.length !== 0 && this.pos < (this.list.length - 1)) {
+      if (this.playList.length !== 0 && this.pos < (this.playList.length - 1)) {
         if (this.loop !== 'random') {
-          this.playingID = this.list[++this.pos]
+          this.playingID = this.playList[++this.pos]
         } else {
-          this.pos = Math.ceil(Math.random() * this.list.length)
-          this.playingID = this.list[this.pos % this.list.length]
+          this.pos = Math.ceil(Math.random() * this.playList.length)
+          this.playingID = this.playList[this.pos % this.playList.length]
         }
       }
     },
     toggleLyric () {
       this.lysrcShow = !this.lysrcShow
+    },
+    deleteItem (item) {
+      this.playList.splice(this.playList.indexOf(item), 1)
+      localStorage.setItem('playList', JSON.stringify(this.playList))
+    },
+    playThis (item) {
+      this.playingID = item
     }
   },
   watch: {
     songID: function (val, oldVal) {
       this.playingID = val
+      if (!this.playList.includes(val)) {
+        this.playList.push(val)
+        localStorage.setItem('playList', JSON.stringify(this.playList))
+      }
     },
     list: function (val, oldVal) {
       this.playingID = val[0]
+      this.playList.push(...val)
+      localStorage.setItem('playList', JSON.stringify(this.playList))
     },
     playingID: function (val, oldVal) {
       const self = this
@@ -203,7 +230,7 @@ export default {
       })
       Http.getLysrcByID(val).then(res => {
         self.lysrc = []
-        res.data.lrc.lyric.split(/\n/).forEach(data => {
+        res.data.lrc && res.data.lrc.lyric.split(/\n/).forEach(data => {
           const pos = data.lastIndexOf(']')
           self.lysrc.push({
             time: data.slice(data.lastIndexOf('[') + 1, pos),
@@ -349,6 +376,10 @@ export default {
         overflow-x: hidden;
         overflow-y: auto;
         border-right: 3px solid darkblue;
+        padding: 10px;
+        li{
+          cursor: pointer;
+        }
       }
       .lysrc-right{
         float: left;

@@ -13,7 +13,7 @@
       <TabPane label="专辑" name="album">
         <div v-for="(album, index) in albumList" :key="album.id" :class="['album',{grey: index % 2 === 0}]">
           <img :src="album.picUrl">
-          <a role="button"><span>{{album.name}}</span><span>{{album.artist.name}}</span></a>
+          <router-link :to="{path: `/album/${album.id}`}" role="button"><span>{{album.name}}</span><span>{{album.artist.name}}</span></router-link>
         </div>
       </TabPane>
       <TabPane label="歌单" name="songs">

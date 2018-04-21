@@ -4,6 +4,7 @@ import DiscoveryMusic from '../components/DiscoveryMusic'
 import SongListDetail from '../components/SongListDetail'
 import SearchResult from '../components/SearchResult'
 import SingerDetail from '../components/SingerDetail'
+import Album from '../components/Album'
 
 Vue.use(Router)
 
@@ -26,6 +27,11 @@ export default new Router({
     {
       path: '/singer/:id',
       component: SingerDetail,
+      props: true
+    },
+    {
+      path: '/album/:id',
+      component: Album,
       props: true
     },
     {
