@@ -338,8 +338,8 @@
             <tbody>
               <tr v-for="(item, index) in topList.tracks" :key="item.id">
                 <td>{{index + 1}}</td>
-                <td><a role="button" @click="play(item.id)"><Icon type="ios-play"></Icon>{{item.name + '-' + item.alia[0]}}</a></td>
-                <td><router-link :to="{path: `/singer/${item.ar[0].id}`}">{{item.ar[0].name}}</router-link></td>
+                <td><a role="button" @click="play(item.id)"><Icon type="ios-play"></Icon>{{item.name}}</a></td>
+                <td><router-link :to="{path: `/singer/${item.artists[0].id}`}">{{item.artists[0].name}}</router-link></td>
               </tr>
             </tbody>
           </table>
@@ -413,7 +413,7 @@ export default {
     getTopList (id) {
       const self = this
       Http.getTopList(id).then(res => {
-        self.topList = res.data.playlist
+        self.topList = res.data.result
       })
     },
     getNewSong () {

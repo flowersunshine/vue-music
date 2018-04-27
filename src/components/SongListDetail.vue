@@ -68,13 +68,13 @@ export default {
     getPlayList (id) {
       const self = this
       Http.getPlayList(id).then(function (res) {
-        self.playList = res.data.result
+        self.playList = res.data.playlist
         self.playList['tracks'].forEach(function (data) {
           self.detailShow.push({
             id: data.id,
             songName: data.name,
-            singer: data.artists[0].name,
-            al: data.album.name
+            singer: data.ar[0].name,
+            al: data.al.name
           })
         })
         self.loading = false
